@@ -3,7 +3,7 @@
 BEGIN TRAN
 
 -- Insertamos los que si tienen Id
-INSERT INTO Pais SELECT DISTINCT idPais AS Id, REPLACE(pais,'               ', '') AS Nombre 
+INSERT INTO Pais SELECT DISTINCT idPais AS Id, REPLACE(REPLACE(pais,'               ', ''),'	','') AS Nombre 
 FROM datos 
 WHERE idPais != 0
 
@@ -30,7 +30,7 @@ DatosDistinct AS (
     FROM (
         SELECT DISTINCT
             idPais AS Id,
-            REPLACE(pais,'               ', '') AS Nombre
+            REPLACE(REPLACE(pais,'               ', ''),'	','') AS Nombre
         FROM datos 
         WHERE idPais = 0
     ) AS DistinctNames
@@ -42,6 +42,8 @@ INSERT INTO Pais SELECT
 FROM 
     DatosDistinct d
 INNER JOIN Faltantes f ON (f.indice = d.indice);
+
+SELECT * FROM PAIS
 
 --COMMIT
 --ROLLBACK

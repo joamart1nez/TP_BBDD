@@ -91,8 +91,6 @@ equipo_idCiudad int,
 equipoOP_idCiudad int
 )
 
-
-
 --COMMIT
 --ROLLBACK
 
@@ -104,5 +102,3 @@ ALTER TABLE DATOS ALTER COLUMN equipo_ciudad varchar(100);
 ALTER TABLE DATOS ALTER COLUMN nombre_completo varchar(100);
 ALTER TABLE DATOS ALTER COLUMN pais varchar(200);
 ALTER TABLE DATOS ALTER COLUMN nombre varchar(100);
-ALTER TABLE DATOS ALTER COLUMN fecha date;
-ALTER TABLE DATOS ALTER COLUMN peso varchar(100);

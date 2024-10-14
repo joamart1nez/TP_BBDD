@@ -1,7 +1,7 @@
 ---- JUGADOR ----
 BEGIN TRAN
 
-INSERT INTO Jugador SELECT DISTINCT
+INSERT INTO JugadoR SELECT DISTINCT
 	d.jugador_id, 
 	p.Id, 
 	REPLACE(REPLACE(d.jugador_codigo, ' ', ''), '	', ''),
@@ -24,8 +24,9 @@ INSERT INTO Jugador SELECT DISTINCT
 	END,
 	d.draft_year,
 	REPLACE(d.posicion, '	', '')
-FROM datos d
-INNER JOIN Pais p ON p.Nombre = d.pais
+FROM datos AS d
+INNER JOIN Pais AS p ON (p.Nombre = REPLACE(REPLACE(d.pais,'               ', ''),'	',''))
 
+SELECT * FROM JUGADOR
 --COMMIT
 --ROLLBACK
