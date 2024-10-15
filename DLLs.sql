@@ -61,7 +61,7 @@ CREATE TABLE Partido(
 	Id INTEGER PRIMARY KEY,
 	Id_Temporada INTEGER,
 	Id_Equipo_Ganador INTEGER,
-	Fechas DATE,
+	Fecha DATE,
 	CONSTRAINT FK_Temporada FOREIGN KEY (Id_Temporada) REFERENCES Temporada(Id),
 	CONSTRAINT FK_Equipo_Ganador FOREIGN KEY (Id_Equipo_Ganador) REFERENCES Equipo(Id)
 );
@@ -108,7 +108,6 @@ GO
 CREATE TABLE EquipoJugador(
 	Id_Jugador INTEGER,
 	Id_Equipo INTEGER,
-	FechaDesde DATE,
 	NroDorsal INTEGER,
 	CONSTRAINT [PK_EJ] PRIMARY KEY CLUSTERED (Id_Jugador, Id_Equipo),
 	CONSTRAINT FK_Jugador_EJ FOREIGN KEY (Id_Jugador) REFERENCES Jugador(Id),
