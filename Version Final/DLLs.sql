@@ -151,10 +151,8 @@ GO
 CREATE TABLE Partido(
 	Id INTEGER PRIMARY KEY,
 	Id_Temporada INTEGER,
-	Id_Equipo_Ganador INTEGER,
 	Fecha DATE,
 	CONSTRAINT FK_Temporada FOREIGN KEY (Id_Temporada) REFERENCES Temporada(Id),
-	CONSTRAINT FK_Equipo_Ganador FOREIGN KEY (Id_Equipo_Ganador) REFERENCES Equipo(Id)
 );
 
 GO 

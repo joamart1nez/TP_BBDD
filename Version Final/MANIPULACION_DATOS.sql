@@ -275,10 +275,6 @@ INSERT INTO Partido
 SELECT DISTINCT
 	partido_id AS Id, 
 	temporada_id AS Id_Temporada, 
-	CASE 
-		WHEN resultado LIKE '%Won%' THEN equipo_id
-		ELSE equipoOP_id
-	END as Id_Equipo_Ganador,
 	fecha as Fecha
 FROM datos
 
@@ -337,72 +333,51 @@ SELECT * FROM PartidoEquipoVisitante
 --- TABLA ESTADISTICA ---
 
 BEGIN TRAN
+
+INSERT INTO Estadistica
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY jugador_id, partido_id) AS Id,
+    partido_id AS Id_Partido,
+    jugador_id AS Id_Jugador,
+    stat_id AS Id_Tipo_Estadistica,
+    stat_valor AS Valor
+FROM (
+	SELECT partido_id, jugador_id, stat_asistencias_id as stat_id, stat_asistencias_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_bloqueos_id as stat_id, stat_bloqueos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_faltas_id as stat_id, stat_faltas_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_minutos_id as stat_id, stat_minutos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_perdidas_id as stat_id, stat_perdidas_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_puntos_id as stat_id, stat_puntos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_rebotes_defensivos_id as stat_id, stat_rebotes_defensivos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_rebotes_ofensivos_id as stat_id, stat_rebotes_ofensivos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_robos_id as stat_id, stat_robos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_segundos_id as stat_id, stat_segundos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_convertidos_id as stat_id, stat_tiros_convertidos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_intentos_id as stat_id, stat_tiros_intentos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_libres_convertidos_id as stat_id, stat_tiros_libres_convertidos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_libres_intentos_id as stat_id, stat_tiros_libres_intentos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_triples_intentos_id as stat_id, stat_tiros_triples_intentos_valor as stat_valor FROM datos
+	UNION
+	SELECT partido_id, jugador_id, stat_tiros_triples_convertidos_id as stat_id, stat_tiros_triples_convertidos_valor as stat_valor FROM datos
+) AS d
+WHERE stat_id IS NOT NULL
+ORDER BY jugador_id, stat_id;
+
 SELECT * FROM Estadistica
 
-DECLARE @query NVARCHAR(MAX);
-DECLARE @subQuery NVARCHAR(MAX);
-
-SET @subQuery = N'
-SELECT 
-    jugador_id,
-    partido_id,
-    v.stat_name,
-    v.stat_id,
-    v.stat_nombre,
-    v.stat_valor
-FROM 
-    DATOS
-CROSS APPLY (VALUES ' +
-    STUFF((
-        SELECT N',(' + 
-               QUOTENAME(COLUMN_NAME, '''') + N', ' + 
-               COLUMN_NAME + N', ' +
-               QUOTENAME(REPLACE(COLUMN_NAME, '_valor', '_nombre'), '''') + N', ' +
-               REPLACE(COLUMN_NAME, '_id', '_valor') + N')'
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = N'datos' 
-          AND COLUMN_NAME LIKE 'stat_%_id'
-        FOR XML PATH(''), TYPE
-    ).value('.', 'NVARCHAR(MAX)'), 1, 1, '') +
-N') v(stat_name, stat_id, stat_nombre, stat_valor)';
-
-SET @query = N'SELECT DISTINCT
-    ROW_NUMBER() OVER (ORDER BY subQuery.jugador_id) AS Id,
-	partido_id AS Id_Partido,
-	jugador_id as Id_Jugador,
-	stat_id as Id_Tipo_Estadistica,
-	stat_valor as Valor
-FROM (' + @subQuery + ') AS subQuery
-ORDER BY Id';
-
-EXEC sp_executesql @query;
---------------------------------------------------------------------------------
-SELECT 
-    ROW_NUMBER() OVER (ORDER BY d.jugador_id, d.partido_id) AS Id,
-    d.partido_id AS Id_Partido,
-    d.jugador_id AS Id_Jugador,
-    v.stat_id AS Id_Tipo_Estadistica,
-    v.stat_valor AS Valor
-FROM 
-    DATOS d
-CROSS APPLY (
-    VALUES 
-        (d.stat_asistencias_id, d.stat_asistencias_valor),
-        (d.stat_bloqueos_id, d.stat_bloqueos_valor),
-		(d.stat_faltas_id, d.stat_faltas_valor),
-		(d.stat_minutos_id, d.stat_minutos_valor),
-		(d.stat_perdidas_id, d.stat_perdidas_valor),
-		(d.stat_puntos_id, d.stat_puntos_valor),
-		(d.stat_rebotes_defensivos_id, d.stat_rebotes_defensivos_valor),
-		(d.stat_rebotes_ofensivos_id, d.stat_rebotes_ofensivos_valor),
-		(d.stat_robos_id, d.stat_robos_valor),
-		(d.stat_segundos_id, d.stat_segundos_valor),
-		(d.stat_tiros_convertidos_id, d.stat_tiros_convertidos_valor),
-		(d.stat_tiros_intentos_id, d.stat_tiros_intentos_valor),
-		(d.stat_tiros_libres_convertidos_id, d.stat_tiros_libres_convertidos_valor),
-		(d.stat_tiros_libres_intentos_id, d.stat_tiros_libres_intentos_valor)
-) v (stat_id, stat_valor)
-WHERE 
-    v.stat_id IS NOT NULL
-ORDER BY 
-    d.jugador_id, v.stat_id;
+--COMMIT
+--ROLLBACK
