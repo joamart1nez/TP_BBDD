@@ -163,17 +163,74 @@ ORDER BY p.DivisionId
 --ORDER BY d.Id
 
 --10. Indicar nombre del país y cantidad de jugadores, del país con más jugadores en el torneo.
+SELECT TOP 1 
+	p.Nombre,
+	COUNT(j.id) AS CantJugadores 
+FROM Pais as p
+	INNER JOIN Jugador AS j ON (p.Id = j.Id_Pais) 
+GROUP BY p.Nombre
+ORDER BY CantJugadores DESC
 
 --11. Cantidad de puntos, rebotes totales y asistencias realizados por Kawhi Leonard contra
 --equipos de la otra conferencia.
-
+SELECT 
+	distinct 
+	(CASE 
+    WHEN te.Descripcion LIKE 'Rebotes%' THEN 'Rebotes Totales'
+    ELSE te.Descripcion
+	END) AS Tipo_Estadistica,
+	SUM(EquiposContrarios.Valor) AS TOTAL
+FROM(
+	SELECT 
+	(CASE WHEN pel.Id_Equipo != e.Id then pel.Id_Equipo else pev.Id_Equipo END) AS idContrarios,
+	es.Id_Tipo_Estadistica,es.Valor
+	FROM Jugador AS j
+		INNER JOIN EquipoJugador AS ej ON (j.Id = ej.Id_Jugador AND CONCAT(j.Nombre,' ',j.Apellido)='Kawhi Leonard')
+		INNER JOIN Equipo AS e ON (ej.Id_Equipo = e.Id)
+		INNER JOIN Estadistica AS es ON (j.Id = es.Id_Jugador)
+		INNER JOIN Partido p ON (es.Id_Partido = p.Id)
+		INNER JOIN PartidoEquipoLocal pel ON (p.Id = pel.Id_Partido) 
+		INNER JOIN PartidoEquipoVisitante pev ON (p.Id = pev.Id_Partido)) AS EquiposContrarios 
+	INNER JOIN Equipo eq ON(EquiposContrarios.idContrarios = eq.Id)
+	INNER JOIN Division AS d ON (eq.Id_Division = d.Id)
+	INNER JOIN Conferencia AS c ON (d.Id_Conferencia = c.Id AND c.Nombre != 'Oeste')
+	INNER JOIN TipoEstadistica AS te ON (EquiposContrarios.Id_Tipo_Estadistica = te .Id 
+		AND (te.Descripcion LIKE 'Rebotes%' OR te.Descripcion='Puntos' OR te.Descripcion='Asistencias'))
+	GROUP BY CASE 
+		WHEN te.Descripcion LIKE 'Rebotes%' THEN 'Rebotes Totales'
+        ELSE te.Descripcion
+		END
+	ORDER BY Tipo_Estadistica
 --12. Cantidad de jugadores con más de 15 años de carrera.
+SELECT 
+    COUNT(Id) AS CantidadJugadores
+FROM Jugador
+WHERE YEAR((SELECT TOP 1 Fecha FROM Partido ORDER BY Partido.Fecha DESC))- DraftYear > 15
 
 --13. Listado de jugadores que jugaron en más de un equipo durante la temporada '2022-2023',
 --indicando su nombre completo, equipo y número de camiseta.
 
+SELECT 
+	CONCAT(Subquery.Nombre,' ',Subquery.Apellido) AS NombreCompleto,
+	e.Nombre AS NombreEquipo,
+	ej.NroDorsal AS NroCamiseta
+FROM 
+	(
+	SELECT 
+		j.Id AS IdJugador,
+		j.Nombre,
+		j.Apellido,
+		COUNT(ej.Id_Equipo) AS EquiposPaso 
+	FROM Jugador as j
+		INNER JOIN EquipoJugador AS ej ON (j.Id = ej.Id_Jugador) 
+		GROUP BY j.Id,j.Nombre,j.Apellido)AS Subquery
+	INNER JOIN EquipoJugador AS ej ON (Subquery.IdJugador = ej.Id_Jugador) 
+	INNER JOIN Equipo AS e ON (ej.Id_Equipo=e.Id)
+WHERE EquiposPaso > 1
+
 --14. Cantidad de partidos en que los que al menos un jugador de los Celtics obtuvo más de 25
 --puntos.
+
 
 --15. Indicar ID de partido, fecha, sigla y puntos realizados del equipo local y visitante, del
 --partido en que el equipo de Kawhi Leonard ganó por mayor diferencia de puntos en la
