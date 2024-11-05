@@ -117,7 +117,9 @@ WHERE (
 )
 
 --9. Promedio de puntos por partido de los equipos agrupados por división.
-SELECT
+SELECT pe.Division, 
+	CAST(SUM(pe.PromedioPuntos)AS FLOAT) / (COUNT(pe.Equipo)) AS PromedioPuntos
+FROM (SELECT
 	p.Equipo,
 	(CAST(CAST(SUM(p.Puntos) AS FLOAT) / (COUNT(p.PartidoId)) AS DECIMAL(5,2))) AS PromedioPuntos,
 	p.Division
@@ -148,8 +150,8 @@ FROM (
 	INNER JOIN Equipo AS e ON (e.Id = pev.Id_Equipo)
 	INNER JOIN Division AS d ON (d.Id = e.Id_Division)
 ) AS p
-GROUP BY p.DivisionId,p.Division,P.Equipo
-ORDER BY p.DivisionId 
+GROUP BY p.Division,P.Equipo
+) AS pe GROUP BY pe.Division
 
 --10. Indicar nombre del país y cantidad de jugadores, del país con más jugadores en el torneo.
 SELECT TOP 1 
